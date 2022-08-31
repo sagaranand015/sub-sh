@@ -1,0 +1,31 @@
+{
+    "LSP3Profile": {
+      "name": "...", 
+      "description": "...", 
+      "links": [
+        {
+          "title": "...", 
+          "url": "..." 
+        }
+      ],
+      "tags": ["...", "..."],
+      "profileImage": [
+        {
+          "width": 640, 
+          "height": 609,
+          "hashFunction": "keccak256(bytes)", 
+          "hash": "0x...", 
+          "url": "ipfs://..." 
+        }
+      ],
+      "backgroundImage": [
+        {
+          "width": 1024, 
+          "height": 576, 
+          "hashFunction": "keccak256(bytes)", 
+          "hash": "0x...", 
+          "url": "ipfs://..."
+        }
+      ]
+    }
+  }
