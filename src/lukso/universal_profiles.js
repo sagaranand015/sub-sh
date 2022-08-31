@@ -14,19 +14,19 @@ import { RPC_ENDPOINT, IPFS_GATEWAY, PRIVATE_KEY, CHAIN_ID } from './constants';
 const web3 = new Web3(RPC_ENDPOINT);
 
 export function GetAppEOA() {
-    // Step 3.1 - Load our Externally Owned Account (EOA)
-    const appEOA = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY);
-    return appEOA;
+  // Step 3.1 - Load our Externally Owned Account (EOA)
+  const appEOA = web3.eth.accounts.privateKeyToAccount(PRIVATE_KEY);
+  return appEOA;
 }
 
 export function GetLSPFactory() {
-    // Step 3.2
-    // Initialize the LSPFactory with the L16 RPC endpoint and your EOA's private key, which will deploy the UP smart contracts
-    const lspFactory = new LSPFactory(RPC_ENDPOINT, {
-        deployKey: PRIVATE_KEY,
-        chainId: CHAIN_ID,
-    });
-    return lspFactory;
+  // Step 3.2
+  // Initialize the LSPFactory with the L16 RPC endpoint and your EOA's private key, which will deploy the UP smart contracts
+  const lspFactory = new LSPFactory(RPC_ENDPOINT, {
+    deployKey: PRIVATE_KEY,
+    chainId: CHAIN_ID,
+  });
+  return lspFactory;
 }
 
 export async function CreateStoreUniversalProfile(ctrlAddress, storeMetadata) {
@@ -49,12 +49,12 @@ export async function CreateStoreUniversalProfile(ctrlAddress, storeMetadata) {
   const newStoreUPAddress = deployedContracts.LSP0ERC725Account.address;
   console.log('Store Universal Profile address: ', newStoreUPAddress);
   return deployedContracts;
-    
+
 }
 
 export async function GetConnectedWalletUPContract() {
   const state = GetGlobalState();
-  if(!state.selectedAddress) {
+  if (!state.selectedAddress) {
     console.error("Wallet is not connected. Please connect wallet first!");
     return null;
   }
@@ -83,13 +83,13 @@ export async function GetUPData(UPAddress) {
     const profile = new ERC725(erc725schema, UPAddress, provider, config);
     return await profile.fetchData('LSP3Profile');
   } catch (error) {
-      console.log('This is not an ERC725 Contract', error);
+    console.log('This is not an ERC725 Contract', error);
   }
 }
 
 export async function GetConnectedWalletUPData() {
   const state = GetGlobalState();
-  if(!state.selectedAddress) {
+  if (!state.selectedAddress) {
     console.error("Wallet is not connected. Please connect wallet first!");
     return null;
   }
@@ -100,8 +100,8 @@ export async function GetConnectedWalletUPData() {
     const profile = new ERC725(erc725schema, state.selectedAddress, provider, config);
     return await profile.fetchData('LSP3Profile');
   } catch (error) {
-      console.log('This is not an ERC725 Contract', error);
-      return null;
+    console.log('This is not an ERC725 Contract', error);
+    return null;
   }
 }
 
@@ -115,33 +115,33 @@ export async function BuildUploadProfileDataToIpfs(profileData) {
 
 export async function EncodeDataViaErc725ForAddress(addr, ipfsUploadedUrl, ipfsUploadedJson) {
 
-    // Step 3.1 - Setup erc725.js
-    const schema = [
-      {
-        name: 'LSP3Profile',
-        key: web3.utils.keccak256('LSP3Profile'),
-        keyType: 'Singleton',
-        valueContent: 'JSONURL',
-        valueType: 'bytes',
-      },
-    ];
+  // Step 3.1 - Setup erc725.js
+  const schema = [
+    {
+      name: 'LSP3Profile',
+      key: web3.utils.keccak256('LSP3Profile'),
+      keyType: 'Singleton',
+      valueContent: 'JSONURL',
+      valueType: 'bytes',
+    },
+  ];
 
-    const erc725 = new ERC725(schema, addr, web3.currentProvider, {
-      ipfsGateway: IPFS_GATEWAY,
-    });
-  
-    // Step 3.2 - Encode the LSP3Profile data (to be written on our UP)
-    const encodedData = erc725.encodeData({
-      keyName: 'LSP3Profile',
-      value: {
-        hashFunction: 'keccak256(utf8)',
-        // hash our LSP3 metadata JSON file
-        hash: web3.utils.keccak256(JSON.stringify(ipfsUploadedJson)),
-        url: ipfsUploadedUrl,
-      },
-    });
+  const erc725 = new ERC725(schema, addr, web3.currentProvider, {
+    ipfsGateway: IPFS_GATEWAY,
+  });
 
-    return encodedData;
+  // Step 3.2 - Encode the LSP3Profile data (to be written on our UP)
+  const encodedData = erc725.encodeData({
+    keyName: 'LSP3Profile',
+    value: {
+      hashFunction: 'keccak256(utf8)',
+      // hash our LSP3 metadata JSON file
+      hash: web3.utils.keccak256(JSON.stringify(ipfsUploadedJson)),
+      url: ipfsUploadedUrl,
+    },
+  });
+
+  return encodedData;
 
 }
 
@@ -195,6 +195,9 @@ export async function ConnectStoreUPToSelectedAddress(storeUPAddr, storeMetadata
     title: storeUPAddr,
     url: storeMetadata.storeUrl,
   });
+  if (!selectedProfileData.tags) {
+    selectedProfileData.tags = [];
+  }
   selectedProfileData.tags.push(storeUPAddr);
 
   console.log("Added store data to links. Editing the connecting profile now...", selectedProfileData);
@@ -264,30 +267,32 @@ export async function DeployStoreToken(creatingStoreAddr, tokenData) {
 
 export async function MintStoreToken(creatingStoreAddr) {
   const appEOA = GetAppEOA();
-  const lsp8IdentifiableDigitalAssetContract = new web3.eth.Contract(LSP8Mintable.abi, appEOA.address, {gas: 5_000_000,
-    gasPrice: '1000000000'});
-  
-    console.log("====== token contract is: ", lsp8IdentifiableDigitalAssetContract);
-  
-    web3.eth.accounts.wallet.add(PRIVATE_KEY);
-  
-    const account = appEOA.address;
-    const to = creatingStoreAddr;
-    const force = true; // When set to TRUE, to may be any address; when set to FALSE to must be a contract that supports LSP1 UniversalReceiver and not revert.
-    const data = '0x';
-    const paddedTokenId = web3.utils.padRight(web3.utils.stringToHex(1), 64);
-  
-    const mintResp = await lsp8IdentifiableDigitalAssetContract.methods.mint(to, paddedTokenId, force, data).send({ from: account });
-    return mintResp;
-    // try {
-    //   await lsp8IdentifiableDigitalAssetContract.methods.mint(to, paddedTokenId, force, data).send({ from: account }).then(resp => {
-    //     console.log("=========== response os: ", resp);
-    //   });
-    //   // mintEvents.value.push({ stepName: '✅ Mint the NFT on the LSP8 smart contract', functionName: 'mint', receipt });
-    // } catch (err) {
-    //   console.log("=========== error is: ", err);
-      
-    // }
+  const lsp8IdentifiableDigitalAssetContract = new web3.eth.Contract(LSP8Mintable.abi, appEOA.address, {
+    gas: 5_000_000,
+    gasPrice: '1000000000'
+  });
+
+  console.log("====== token contract is: ", lsp8IdentifiableDigitalAssetContract);
+
+  web3.eth.accounts.wallet.add(PRIVATE_KEY);
+
+  const account = appEOA.address;
+  const to = creatingStoreAddr;
+  const force = true; // When set to TRUE, to may be any address; when set to FALSE to must be a contract that supports LSP1 UniversalReceiver and not revert.
+  const data = '0x';
+  const paddedTokenId = web3.utils.padRight(web3.utils.stringToHex(1), 64);
+
+  const mintResp = await lsp8IdentifiableDigitalAssetContract.methods.mint(to, paddedTokenId, force, data).send({ from: account });
+  return mintResp;
+  // try {
+  //   await lsp8IdentifiableDigitalAssetContract.methods.mint(to, paddedTokenId, force, data).send({ from: account }).then(resp => {
+  //     console.log("=========== response os: ", resp);
+  //   });
+  //   // mintEvents.value.push({ stepName: '✅ Mint the NFT on the LSP8 smart contract', functionName: 'mint', receipt });
+  // } catch (err) {
+  //   console.log("=========== error is: ", err);
+
+  // }
 
 }
 

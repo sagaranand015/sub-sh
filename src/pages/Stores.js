@@ -41,7 +41,7 @@ export default function Stores() {
   const allStoreAddr = [];
   const allStores = [];
   const [allStoresGrid, setAllStoresGrid] = useState([]);
-  const [ showLoading, setShowLoading] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
   useEffect(() => {
     GetAllStoreAddresses();
@@ -59,7 +59,7 @@ export default function Stores() {
     allStoreAddr.forEach(storeAddr => {
       try {
         const reqs = GetUPData(storeAddr).then(res => {
-          if(res) {
+          if (res) {
             console.log("======== resp is: ", res.value.LSP3Profile);
             allStores.push({
               'id': storeAddr,
@@ -70,7 +70,7 @@ export default function Stores() {
           }
         });
       }
-      catch(error) {
+      catch (error) {
         console.error(error);
       }
     });
@@ -78,12 +78,15 @@ export default function Stores() {
   }
 
   async function GetAllStoreAddresses() {
-    if(!state.selectedAddress) {
+    if (!state.selectedAddress) {
       alert("Please connect wallet to see stores here...");
       return;
     }
     const connectedProfileData = state.selectedProfile;
     console.log("selected profile data is: ", connectedProfileData.links);
+    if (!connectedProfileData.links) {
+      connectedProfileData.links = []
+    }
     connectedProfileData.links.forEach(addr => {
       allStoreAddr.push(addr.title);
     });
@@ -101,7 +104,7 @@ export default function Stores() {
     setOpenFilter(false);
   };
 
-  if(!showLoading) {
+  if (!showLoading) {
     return (
       <Loading />
     );
@@ -109,21 +112,21 @@ export default function Stores() {
 
   return (
     <Page title="Stores">
-        <Container>
+      <Container>
 
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-            <Typography variant="h4" gutterBottom>
-              Stores
-            </Typography>
-            <Button variant="contained" component={RouterLink} to="/dashboard/newstore" startIcon={<Iconify icon="eva:plus-fill" />}>
-              Create New Store
-            </Button>
-          </Stack>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
+          <Typography variant="h4" gutterBottom>
+            Stores
+          </Typography>
+          <Button variant="contained" component={RouterLink} to="/dashboard/newstore" startIcon={<Iconify icon="eva:plus-fill" />}>
+            Create New Store
+          </Button>
+        </Stack>
 
-          <ProductList products={allStoresGrid} />
-          {/* <ProductCartWidget /> */}
-        </Container>
-      </Page>
+        <ProductList products={allStoresGrid} />
+        {/* <ProductCartWidget /> */}
+      </Container>
+    </Page>
   );
-  
+
 }
